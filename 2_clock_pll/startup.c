@@ -1,7 +1,10 @@
 #include <stdint.h>
 #include "reg.h"
+#include "blink.h"
 
 extern int main(void);
+
+extern  void blink(unsigned int led);
 
 void set_sysclk_pll(void);
 
@@ -35,7 +38,7 @@ void reset_handler(void)
 
 	while (dst_ptr < mybss_vend_ptr)
 		*dst_ptr++ = 0;
-
+	
 	set_sysclk_pll();
 
 	main();
@@ -43,51 +46,62 @@ void reset_handler(void)
 
 /**
  * 
+ * 
  * set sysclk pll (168 MHz)
  * 
  */
 void set_sysclk_pll(void)
 {
 	//enable HSE
-	????????
-
+	WRITE_BITS(RCC_BASE + RCC_CR_OFFSET, HSEON_BIT, HSEON_BIT, 0b1);
+ 
 	//wait
 	while (READ_BIT(RCC_BASE + RCC_CR_OFFSET, HSERDY_BIT) != 1)
 		;
 
 	//set pll
-	???????? //use HSE for PLL source
+	//use HSE for PLL source
+	WRITE_BITS(RCC_BASE + RCC_PLLCFGR_OFFSET, PLLSRC_BIT, PLLSRC_BIT, 0b1);
 
 	//f_HSE = 8 MHz
 	//
 	//N = 168
+	//WRITE_BITS(RCC_BASE + RCC_PLLCFGR_OFFSET, PLLN_8_BIT, PLLN_0_BIT, 0b10101000);
 	//M = 4
-	//
+	//WRITE_BITS(RCC_BASE + RCC_PLLCFGR_OFFSET, PLLM_5_BIT, PLLM_0_BIT, 0b100);
 	//f_VCO = 8 * 168 / 4 = 168 * 2
 	//
 	//P = 2
-	//
+	//WRITE_BITS(RCC_BASE + RCC_PLLCFGR_OFFSET, PLLP_0_BIT, PLLP_1_BIT, 0b00);
 	//f_PLL_out = 168
 	//
 	WRITE_BITS(RCC_BASE + RCC_PLLCFGR_OFFSET, PLLP_1_BIT, PLLP_0_BIT, 0b00);
 	WRITE_BITS(RCC_BASE + RCC_PLLCFGR_OFFSET, PLLN_8_BIT, PLLN_0_BIT, 168);
-	????????
+	WRITE_BITS(RCC_BASE + RCC_PLLCFGR_OFFSET, PLLM_5_BIT, PLLM_0_BIT, 0b0000100);
+	//set m 
 
 	//enable pll
-	????????
+	WRITE_BITS(RCC_BASE + RCC_CR_OFFSET, PLLON_BIT, PLLON_BIT, 0b1);
 
-	//wait
-	????????
+	//wait PLL
+	while (READ_BIT(RCC_BASE + RCC_CR_OFFSET, PLLRDY_BIT) != 1)
+		;
 
 	//enable flash prefetch buffer
-	????????
+	WRITE_BITS(FLASH_BASE + FLASH_ACR_OFFSET, PRFTEN_BIT, PRFTEN_BIT, 0b1);
+
 
 	//set flash wait state = 5
-	????????
+	WRITE_BITS(FLASH_BASE + FLASH_ACR_OFFSET, LATENCY_2_BIT, LATENCY_0_BIT, 0b101);
+
 
 	//use pll
-	????????
+	WRITE_BITS(RCC_BASE + RCC_CFGR_OFFSET, SW_1_BIT, SW_0_BIT, 0b10);
 
+//RCC_CR_OFFSET
 	//wait
-	????????
+	while (  (READ_BIT(RCC_BASE + RCC_CFGR_OFFSET, SWS_1_BIT) != 1) || (READ_BIT(RCC_BASE + RCC_CFGR_OFFSET, SWS_0_BIT) != 0) )
+		;
+		
+
 }

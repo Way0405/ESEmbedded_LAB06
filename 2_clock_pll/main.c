@@ -2,11 +2,12 @@
 #include "reg.h"
 #include "blink.h"
 
+
 void op_sysclk(unsigned int div);
 
 int main(void)
 {
-	op_sysclk(3);
+	op_sysclk(4);//除瀕倍數//42mhz
 	blink(LED_BLUE);
 }
 
@@ -35,7 +36,7 @@ void op_sysclk(unsigned int div)
 
 	SET_BIT(RCC_BASE + RCC_AHB1ENR_OFFSET, GPIO_EN_BIT(GPIO_PORTC));
 
-	//GPIO MODER
+	//GPIO MODER output 10
 	SET_BIT(GPIO_BASE(GPIO_PORTC) + GPIOx_MODER_OFFSET, MODERy_1_BIT(9));
 	CLEAR_BIT(GPIO_BASE(GPIO_PORTC) + GPIOx_MODER_OFFSET, MODERy_0_BIT(9));
 
