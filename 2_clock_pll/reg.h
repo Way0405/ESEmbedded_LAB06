@@ -13,61 +13,95 @@
 in case  31-0+1=32 1<<32 become 33 bits data ==0
 */
 #define WRITE_BITS(addr, highest_bit, lowest_bit, data) (REG(addr) = (REG(addr) & CLEAR_MASK(highest_bit, lowest_bit)) | ((uint32_t)(data) << (lowest_bit)))
+/*writebits explane
 
+31 30 29 28 27 ..........1 0
+1  1  1  0  0 1  .. .........
+1  0  0   0  1 1 1 1(AND)     Clear mask
+0  0  1   0  0 0 0 0(OR)      data << lowbits
+1 0  1  0  0  1  ...........
+
+how come clear mask?
+1 0 0 0 1 1 1 1 ....= ~(0 1 1 1 0 0 0 ......)
+how come 0 1 1 1 0 0 0 ....
+111 << lowbit
+how come 1 1 1
+0b1000-1
+how come 1000
+1<<3
+how come3
+highbit-lowbits +1
+*/
 #define SET_BIT(addr, bit) (REG(addr) |= UINT32_1 << (bit))
 #define CLEAR_BIT(addr, bit) (REG(addr) &= ~(UINT32_1 << (bit)))
 
 #define READ_BIT(addr, bit) ((REG(addr) >>(bit))&UINT32_1)
-//  xxxxxx......y
-//  000000......1
-//&=000000......y
-//make read mask
-/*if(READ_BIT(GPIO_BASE(GPIO_PORTA) + GPIOx_IDR_OFFSET, IDRy_BIT(0))==1)*/
-
 
 //FLASH
 #define FLASH_BASE 0x40023c00
-
-#define FLASH_ACR_OFFSET 0x00
-#define PRFTEN_BIT 8
+ 
+#define FLASH_ACR_OFFSET 0x00//access control reg
+#define PRFTEN_BIT 8 //prefetch enable
 #define LATENCY_2_BIT 2
 #define LATENCY_1_BIT 1
 #define LATENCY_0_BIT 0
+//the ratio of the c[u period to the flash access time
 
 //RCC
 #define RCC_BASE 0x40023800
 
-#define RCC_CR_OFFSET 0x00
-#define PLLRDY_BIT 25
-#define PLLON_BIT 24
-#define HSERDY_BIT 17
-#define HSEON_BIT 16
+#define RCC_CR_OFFSET 0x00 //clock control reg
+#define PLLRDY_BIT 25 //PLL ready
+#define PLLON_BIT 24  //PLL enable
+#define HSERDY_BIT 17 //HSE ready
+#define HSEON_BIT 16  //HSE enable
 
-#define RCC_PLLCFGR_OFFSET 0x04
+#define RCC_PLLCFGR_OFFSET 0x04 //PLL configeration reg 設定
 
-#define PLLSRC_BIT 22
+#define PLLSRC_BIT 22 //PLL input source 0=HSI 1=HSE
+
+//Fout=Fin*n/mp
 
 #define PLLP_1_BIT 17
 #define PLLP_0_BIT 16
+/*
+00=2
+01=4
+10=6
+11=8
+*/
 
 #define PLLN_8_BIT 14
 #define PLLN_0_BIT 6
+/*
+50<=N<=432
+*/
 
 #define PLLM_5_BIT 5
 #define PLLM_0_BIT 0
+/*
+2<=M<=63
+*/
 
-#define RCC_CFGR_OFFSET 0x08
+#define RCC_CFGR_OFFSET 0x08 //clock configeration
 #define MCO2_1_BIT 31
 #define MCO2_0_BIT 30
-
+//select MCO2 output sorce
+//11=PLL
 #define MCO2PRE_2_BIT 29
 #define MCO2PRE_0_BIT 27
-
+// MCO2 prescaler
 #define SWS_1_BIT 3
 #define SWS_0_BIT 2
-
+/*
+是否設定好了
+10 for PLL
+*/
 #define SW_1_BIT 1
 #define SW_0_BIT 0
+/*
+10=select PLL as system clock
+*/
 
 #define RCC_AHB1ENR_OFFSET 0x30
 #define GPIO_EN_BIT(port) (port)
@@ -96,7 +130,7 @@ in case  31-0+1=32 1<<32 become 33 bits data ==0
 #define PUPDRy_0_BIT(y) ((y)*2)
 
 #define GPIOx_BSRR_OFFSET 0x18
-#define BRy_BIT(y) ((y) + 16)
-#define BSy_BIT(y) (y)
+#define BRy_BIT(y) ((y) + 16) //reset
+#define BSy_BIT(y) (y) //set
 
 #endif
